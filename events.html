@@ -28,11 +28,6 @@
 
 <h2 class="evsec top">Upcoming Events</h2>
   <div class="ev">
-    <div class="evd">Nov 13, 2026</div>
-    <div class="evm"><div class="evt">Snowflake AI PM Roles: AMA</div></div>
-    <a class="evgo" href="https://haas.campusgroups.com/haic/rsvp_boot?id=2251536" target="_blank" rel="noopener">Go to Event &rarr;</a>
-  </div>
-  <div class="ev">
     <div class="evd">Nov 17, 2026</div>
     <div class="evm"><div class="evt">AI Risk Series: Emma Pierson - Interpretability for Safety &amp; Scientific Discovery</div></div>
     <a class="evgo" href="https://haas.campusgroups.com/haic/rsvp_boot?id=2251530" target="_blank" rel="noopener">Go to Event &rarr;</a>
@@ -54,6 +49,11 @@
   </div>
 
 <h2 class="evsec">Past Events</h2>
+  <div class="ev">
+    <div class="evd">Nov 13, 2026</div>
+    <div class="evm"><div class="evt">Snowflake AI PM Roles: AMA</div></div>
+    <a class="evgo" href="https://haas.campusgroups.com/haic/rsvp_boot?id=2251536" target="_blank" rel="noopener">Go to Event &rarr;</a>
+  </div>
   <div class="ev">
     <div class="evd">Nov 10, 2026</div>
     <div class="evm"><div class="evt">AI for Jobsearch</div></div>
@@ -129,6 +129,34 @@
     <div class="evm"><div class="evt">AI Trek Series | Into the Lab: Physical AI</div></div>
   </div>
 </main>
+<script>
+// Safety net: if an event's date has passed but it is still under Upcoming,
+// move it to the top of Past Events. Entries keep the same markup, so they
+// are still added and moved by hand as described in website-updates.md.
+(function(){
+  var M={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  function endOf(s){var m=/^([A-Za-z]{3})\s+(\d{1,2})(?:\s*-\s*(\d{1,2}))?,\s*(\d{4})/.exec((s||'').trim());
+    return m?new Date(+m[4],M[m[1]],+(m[3]||m[2]),23,59,59):null;}
+  var up=null, past=null;
+  document.querySelectorAll('h2.evsec').forEach(function(h){var x=h.textContent.trim();
+    if(x==='Upcoming Events')up=h; if(x==='Past Events')past=h;});
+  if(!up||!past) return;
+  var now=new Date(), moved=[];
+  for(var el=up.nextElementSibling; el&&el!==past; el=el.nextElementSibling){
+    if(!el.classList.contains('ev')) continue;
+    var d=endOf((el.querySelector('.evd')||{}).textContent);
+    if(d&&d<now) moved.push(el);
+  }
+  moved.sort(function(a,b){return endOf(b.querySelector('.evd').textContent)-endOf(a.querySelector('.evd').textContent);});
+  var anchor=past.nextSibling;
+  moved.forEach(function(e){past.parentNode.insertBefore(e,anchor);});
+  var any=false;
+  for(var x=up.nextElementSibling; x&&x!==past; x=x.nextElementSibling){ if(x.classList.contains('ev')) any=true; }
+  if(!any){var p=document.createElement('p'); p.className='evempty';
+    p.style.cssText='color:var(--muted);font-size:14px;padding:18px 6px';
+    p.textContent='More events coming soon.'; past.parentNode.insertBefore(p,past);}
+})();
+</script>
 <footer>
   <div class="flinks">
     <a href="https://haas.campusgroups.com/haic/home/" target="_blank" rel="noopener">Campus Groups</a>

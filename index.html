@@ -38,11 +38,6 @@
 
 <div class="sechead"><h2 class="evsec">Up next</h2><a href="events.html">All events &rarr;</a></div>
 <div id="upnext">
-  <div class="ev" data-date="2026-11-13">
-    <div class="evd">Fri Nov 13</div>
-    <div class="evm"><div class="evt">Snowflake AI PM Roles: AMA</div></div>
-    <a class="evgo" href="https://haas.campusgroups.com/haic/rsvp_boot?id=2251536" target="_blank" rel="noopener">RSVP &rarr;</a>
-  </div>
   <div class="ev" data-date="2026-11-17">
     <div class="evd">Tue Nov 17</div>
     <div class="evm"><div class="evt">AI Risk Series: Emma Pierson - Interpretability for Safety &amp; Scientific Discovery</div></div>
@@ -88,15 +83,39 @@
 </div>
 </main>
 <script>
-// Show the next 3 upcoming events and hide past ones, so the home page never shows stale events.
+// "Up next" reads the Upcoming list on events.html, so an event only needs adding there.
+// The entries written above are a fallback in case events.html cannot be loaded.
 (function(){
-  var today=new Date(); today.setHours(0,0,0,0);
-  var items=document.querySelectorAll('#upnext .ev[data-date]'), shown=0;
-  items.forEach(function(el){
-    var d=new Date(el.getAttribute('data-date')+'T23:59:59');
-    if(d<today || shown>=3) el.style.display='none'; else shown++;
-  });
-  if(!shown) document.querySelector('.upnext-empty').hidden=false;
+  var M={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  var D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function parse(s){var m=/^([A-Za-z]{3})\s+(\d{1,2})(?:\s*-\s*(\d{1,2}))?,\s*(\d{4})/.exec((s||'').trim());
+    return m?{start:new Date(+m[4],M[m[1]],+m[2]),end:new Date(+m[4],M[m[1]],+(m[3]||m[2]),23,59,59),mon:m[1]}:null;}
+  var box=document.getElementById('upnext'), empty=document.querySelector('.upnext-empty'), now=new Date();
+  function esc(x){var d=document.createElement('div');d.textContent=x;return d.innerHTML;}
+  function showFallback(){var shown=0;
+    box.querySelectorAll('.ev[data-date]').forEach(function(el){
+      var d=new Date(el.getAttribute('data-date')+'T23:59:59');
+      if(d<now||shown>=3) el.style.display='none'; else shown++;});
+    if(!shown) empty.hidden=false;}
+  fetch('events.html',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.text();}).then(function(html){
+    var doc=new DOMParser().parseFromString(html,'text/html'), up=null, items=[];
+    doc.querySelectorAll('h2.evsec').forEach(function(h){if(h.textContent.trim()==='Upcoming Events')up=h;});
+    if(!up) throw 0;
+    for(var el=up.nextElementSibling; el&&el.tagName!=='H2'; el=el.nextElementSibling){
+      if(!el.classList.contains('ev')) continue;
+      var d=parse((el.querySelector('.evd')||{}).textContent); if(!d||d.end<now) continue;
+      var a=el.querySelector('a.evgo');
+      items.push({d:d,title:(el.querySelector('.evt')||{}).textContent||'',href:a?a.getAttribute('href'):''});
+    }
+    items.sort(function(a,b){return a.d.start-b.d.start;});
+    items=items.slice(0,3);
+    if(!items.length){box.innerHTML='';empty.hidden=false;return;}
+    box.innerHTML=items.map(function(it){
+      var label=D[it.d.start.getDay()]+' '+it.d.mon+' '+it.d.start.getDate();
+      var link=it.href?'<a class="evgo" href="'+esc(it.href)+'" target="_blank" rel="noopener">RSVP &rarr;</a>':'';
+      return '<div class="ev"><div class="evd">'+label+'</div><div class="evm"><div class="evt">'+esc(it.title)+'</div></div>'+link+'</div>';
+    }).join('');
+  }).catch(showFallback);
 })();
 </script>
 <footer>

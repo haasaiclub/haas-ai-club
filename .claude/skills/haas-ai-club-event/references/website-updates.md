@@ -34,6 +34,11 @@ Entry markup (copy an existing entry exactly):
   Hackathons/workshops and treks stay in their own sections - do NOT move them
   into Past Events. Add new ones to their section directly.
 - Before adding, check the event is not already listed (idempotency).
+- The Home page "Up next" list reads Upcoming Events from events.html and shows
+  the next 3, so a new event only needs adding here. As a safety net,
+  events.html also moves any Upcoming entry whose date has passed to the top
+  of Past Events when the page loads. Still move entries by hand after the
+  event so the page source stays accurate.
 
 ## Adding a speaker (speakers.html)
 
